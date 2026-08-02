@@ -24,11 +24,16 @@ jobs:
       - name: Install Chrome for Puppeteer
         run: node node_modules/puppeteer/install.mjs
 
+      - name: Install Puppeteer system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libatk1.0-0 libatk-bridge2.0-0 libcups2 libdrm2 libxkbcommon0 libxcomposite1 libxdamage1 libxfixes3 libxrandr2 libgbm1 libasound2t64
+
       - name: Run bank sync
         env:
           NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
-          DISCOUNT_ID: ${{ secrets.DISCOUNT_ID }}
+          DISCOUNT_USER: ${{ secrets.DISCOUNT_ID }}
           DISCOUNT_PASS: ${{ secrets.DISCOUNT_PASS }}
           ISRACARD_ID: ${{ secrets.ISRACARD_ID }}
           ISRACARD_PASS: ${{ secrets.ISRACARD_PASS }}
