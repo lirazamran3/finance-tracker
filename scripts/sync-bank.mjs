@@ -13,7 +13,7 @@ const START_DATE = new Date(new Date().getFullYear(), new Date().getMonth() - 2,
 const results = [];
 
 // Discount Bank
-if (process.env.DISCOUNT_ID && process.env.DISCOUNT_PASS) {
+if (process.env.DISCOUNT_USER && process.env.DISCOUNT_PASS) {
   console.log('סורק בנק דיסקונט...');
   try {
     const scraper = createScraper({
@@ -23,7 +23,7 @@ if (process.env.DISCOUNT_ID && process.env.DISCOUNT_PASS) {
       showBrowser: false,
     });
     const result = await scraper.scrape({
-      userCode: process.env.DISCOUNT_ID,
+      userCode: process.env.DISCOUNT_USER,
       password: process.env.DISCOUNT_PASS,
     });
     if (result.success && result.accounts) {
