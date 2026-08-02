@@ -6,103 +6,59 @@ import CategoryPieChart from '@/components/CategoryPieChart';
 import TransactionList from '@/components/TransactionList';
 import AddTransactionModal from '@/components/AddTransactionModal';
 import TransactionDrawer, { DrawerConfig } from '@/components/TransactionDrawer';
-import { MOCK_CURRENT_MONTH, MONTH_NAMES } from '@/lib/mock-data';
+import { MONTH_NAMES } from '@/lib/mock-data';
+import { useTransactions } from '@/lib/useTransactions';
 import { Transaction } from '@/lib/types';
 
 const DRAWER_CONFIGS: Record<string, DrawerConfig> = {
   income: {
-    title: 'הכנסות',
-    icon: '💰',
-    color: '#059669',
-    bgColor: '#D1FAE5',
-    filterFn: t => t.type === 'income',
-    defaultType: 'income',
-    defaultFixed: false,
+    title: 'הכנסות', icon: '💰', color: '#059669', bgColor: '#D1FAE5',
+    filterFn: t => t.type === 'income', defaultType: 'income', defaultFixed: false,
   },
   monthly: {
-    title: 'הוצאות חודשיות',
-    icon: '🛒',
-    color: '#7C3AED',
-    bgColor: '#EDE9FE',
-    filterFn: t => t.type === 'expense' && !t.isFixed,
-    defaultType: 'expense',
-    defaultFixed: false,
+    title: 'הוצאות חודשיות', icon: '🛒', color: '#7C3AED', bgColor: '#EDE9FE',
+    filterFn: t => t.type === 'expense' && !t.isFixed, defaultType: 'expense', defaultFixed: false,
   },
   fixed: {
-    title: 'הוצאות קבועות',
-    icon: '🏠',
-    color: '#D97706',
-    bgColor: '#FEF3C7',
-    filterFn: t => t.type === 'expense' && t.isFixed,
-    defaultType: 'expense',
-    defaultFixed: true,
+    title: 'הוצאות קבועות', icon: '🏠', color: '#D97706', bgColor: '#FEF3C7',
+    filterFn: t => t.type === 'expense' && t.isFixed, defaultType: 'expense', defaultFixed: true,
   },
   invest: {
-    title: 'השקעות / חסכון',
-    icon: '📈',
-    color: '#0EA5E9',
-    bgColor: '#E0F2FE',
-    filterFn: t => t.type === 'investment',
-    defaultType: 'investment',
-    defaultFixed: false,
+    title: 'השקעות / חסכון', icon: '📈', color: '#0EA5E9', bgColor: '#E0F2FE',
+    filterFn: t => t.type === 'investment', defaultType: 'investment', defaultFixed: false,
   },
 };
 
-function rebuildSummary(transactions: Transaction[], prev: typeof MOCK_CURRENT_MONTH) {
-  const totalIncome = transactions.filter(x => x.type === 'income').reduce((s, x) => s + x.amount, 0);
-  const totalFixedExpenses = transactions.filter(x => x.type === 'expense' && x.isFixed).reduce((s, x) => s + x.amount, 0);
-  const totalMonthlyExpenses = transactions.filter(x => x.type === 'expense' && !x.isFixed).reduce((s, x) => s + x.amount, 0);
-  const totalInvestments = transactions.filter(x => x.type === 'investment').reduce((s, x) => s + x.amount, 0);
-
-  const catMap = new Map<string, number>();
-  transactions.filter(x => x.type === 'expense').forEach(x => {
-    catMap.set(x.category, (catMap.get(x.category) ?? 0) + x.amount);
-  });
-
-  return {
-    ...prev,
-    transactions,
-    totalIncome,
-    totalFixedExpenses,
-    totalMonthlyExpenses,
-    totalInvestments,
-    totalSaved: totalIncome - totalMonthlyExpenses - totalFixedExpenses - totalInvestments,
-    categoryBreakdown: Array.from(catMap.entries()).map(([cat, amount]) => ({
-      category: cat as any,
-      amount,
-      color: prev.categoryBreakdown.find(c => c.category === cat)?.color ?? '#94A3B8',
-    })),
-  };
-}
-
 export default function DashboardPage() {
-  const [summary, setSummary] = useState(MOCK_CURRENT_MONTH);
+  const now = new Date();
+  const month = now.getMonth() + 1;
+  const year = now.getFullYear();
+
+  const { summary, loading, usingMock, addTransaction, deleteTransaction } = useTransactions(month, year);
   const [showAdd, setShowAdd] = useState(false);
   const [activeDrawer, setActiveDrawer] = useState<string | null>(null);
-
-  const now = new Date();
-  const monthName = MONTH_NAMES[now.getMonth() + 1];
-  const year = now.getFullYear();
 
   const savingsRate = summary.totalIncome > 0
     ? Math.round(((summary.totalIncome - summary.totalMonthlyExpenses - summary.totalFixedExpenses) / summary.totalIncome) * 100)
     : 0;
-
-  function handleAdd(t: Transaction) {
-    setSummary(prev => rebuildSummary([...prev.transactions, t], prev));
-  }
-
-  function handleDelete(id: string) {
-    setSummary(prev => rebuildSummary(prev.transactions.filter(t => t.id !== id), prev));
-  }
 
   return (
     <div className="max-w-5xl mx-auto pb-24 md:pb-0">
       {/* Header */}
       <div className="flex items-center justify-between mb-8 fade-up">
         <div>
-          <h2 className="text-2xl font-bold text-[#1E1B4B]">{monthName} {year}</h2>
-          <p className="text-sm text-[#6B7280] mt-0.5">סיכום חודשי</p>
+          <h2 className="text-2xl font-bold text-[#1E1B4B]">{MONTH_NAMES[month]} {year}</h2>
+          <div className="flex items-center gap-2 mt-0.5">
+            <p className="text-sm text-[#6B7280]">סיכום חודשי</p>
+            {usingMock && (
+              <span className="text-xs text-[#F59E0B] bg-[#FEF3C7] px-2 py-0.5 rounded-full font-medium">
+                נתוני דמו
+              </span>
+            )}
+            {loading && (
+              <span className="w-3.5 h-3.5 border-2 border-[#E5E7EB] border-t-[#7C3AED] rounded-full spin inline-block" />
+            )}
+          </div>
         </div>
         <button onClick={() => setShowAdd(true)} className="btn-primary">
           <span className="text-lg leading-none">+</span>
@@ -110,48 +66,20 @@ export default function DashboardPage() {
         </button>
       </div>
 
-      {/* Stat cards — all clickable */}
+      {/* Stat cards */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-        <StatCard
-          title="הכנסות"
-          amount={summary.totalIncome}
-          icon="💰"
-          color="#059669"
-          bgColor="#D1FAE5"
-          subtitle="לחצי לפירוט"
-          delay={0}
-          onClick={() => setActiveDrawer('income')}
-        />
-        <StatCard
-          title="הוצאות חודשיות"
-          amount={summary.totalMonthlyExpenses}
-          icon="🛒"
-          color="#7C3AED"
-          bgColor="#EDE9FE"
-          subtitle="לחצי לפירוט"
-          delay={50}
-          onClick={() => setActiveDrawer('monthly')}
-        />
-        <StatCard
-          title="הוצאות קבועות"
-          amount={summary.totalFixedExpenses}
-          icon="🏠"
-          color="#D97706"
-          bgColor="#FEF3C7"
-          subtitle="לחצי לפירוט"
-          delay={100}
-          onClick={() => setActiveDrawer('fixed')}
-        />
-        <StatCard
-          title="השקעות / חסכון"
-          amount={summary.totalInvestments}
-          icon="📈"
-          color="#0EA5E9"
-          bgColor="#E0F2FE"
-          subtitle={`${savingsRate}% מהכנסות`}
-          delay={150}
-          onClick={() => setActiveDrawer('invest')}
-        />
+        <StatCard title="הכנסות" amount={summary.totalIncome} icon="💰"
+          color="#059669" bgColor="#D1FAE5" subtitle="לחצי לפירוט" delay={0}
+          onClick={() => setActiveDrawer('income')} />
+        <StatCard title="הוצאות חודשיות" amount={summary.totalMonthlyExpenses} icon="🛒"
+          color="#7C3AED" bgColor="#EDE9FE" subtitle="לחצי לפירוט" delay={50}
+          onClick={() => setActiveDrawer('monthly')} />
+        <StatCard title="הוצאות קבועות" amount={summary.totalFixedExpenses} icon="🏠"
+          color="#D97706" bgColor="#FEF3C7" subtitle="לחצי לפירוט" delay={100}
+          onClick={() => setActiveDrawer('fixed')} />
+        <StatCard title="השקעות / חסכון" amount={summary.totalInvestments} icon="📈"
+          color="#0EA5E9" bgColor="#E0F2FE" subtitle={`${savingsRate}% מהכנסות`} delay={150}
+          onClick={() => setActiveDrawer('invest')} />
       </div>
 
       {/* Balance bar */}
@@ -174,9 +102,7 @@ export default function DashboardPage() {
         </div>
         <div className="flex justify-between mt-1.5 text-xs text-[#9CA3AF]">
           <span>0%</span>
-          <span>
-            {Math.round(((summary.totalMonthlyExpenses + summary.totalFixedExpenses) / summary.totalIncome) * 100)}% מהכנסות הוצא
-          </span>
+          <span>{Math.round(((summary.totalMonthlyExpenses + summary.totalFixedExpenses) / summary.totalIncome) * 100)}% מהכנסות הוצא</span>
           <span>100%</span>
         </div>
       </div>
@@ -187,9 +113,11 @@ export default function DashboardPage() {
         <TransactionList transactions={summary.transactions} limit={8} />
       </div>
 
-      {/* Modals & Drawers */}
       {showAdd && (
-        <AddTransactionModal onClose={() => setShowAdd(false)} onAdd={handleAdd} />
+        <AddTransactionModal
+          onClose={() => setShowAdd(false)}
+          onAdd={(t: Transaction) => { addTransaction(t); setShowAdd(false); }}
+        />
       )}
 
       {activeDrawer && DRAWER_CONFIGS[activeDrawer] && (
@@ -197,8 +125,8 @@ export default function DashboardPage() {
           config={DRAWER_CONFIGS[activeDrawer]}
           transactions={summary.transactions}
           onClose={() => setActiveDrawer(null)}
-          onAdd={t => { handleAdd(t); }}
-          onDelete={handleDelete}
+          onAdd={addTransaction}
+          onDelete={deleteTransaction}
         />
       )}
     </div>
