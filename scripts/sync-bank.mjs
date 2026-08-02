@@ -11,16 +11,14 @@ const supabase = createClient(
 const CATEGORIES = ['מזון ומסעדות','תחבורה','בילויים','קניות','חשבונות וקבועים','בריאות','השקעות וחסכון','שכר והכנסות','אחר'];
 const START_DATE = new Date(new Date().getFullYear(), new Date().getMonth() - 2, 1);
 
-const browser = await puppeteer.launch({
-  headless: true,
-  args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage'],
-});
+const BROWSER_ARGS = ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage'];
 
 const results = [];
 
 // Discount Bank
 if (process.env.DISCOUNT_USER && process.env.DISCOUNT_PASS) {
   console.log('סורק בנק דיסקונט...');
+  const browser = await puppeteer.launch({ headless: true, args: BROWSER_ARGS });
   try {
     const scraper = createScraper({
       companyId: CompanyTypes.discount,
@@ -54,6 +52,8 @@ if (process.env.DISCOUNT_USER && process.env.DISCOUNT_PASS) {
     }
   } catch (e) {
     console.error('שגיאה בדיסקונט:', e.message);
+  } finally {
+    await browser.close();
   }
 }
 
@@ -61,6 +61,7 @@ if (process.env.DISCOUNT_USER && process.env.DISCOUNT_PASS) {
 if (process.env.ISRACARD_ID && process.env.ISRACARD_PASS && process.env.ISRACARD_CARD6) {
   console.log('סורק ישראכרט...');
   const countBefore = results.length;
+  const browser = await puppeteer.launch({ headless: true, args: BROWSER_ARGS });
   try {
     const scraper = createScraper({
       companyId: CompanyTypes.isracard,
@@ -95,6 +96,8 @@ if (process.env.ISRACARD_ID && process.env.ISRACARD_PASS && process.env.ISRACARD
     }
   } catch (e) {
     console.error('שגיאה בישראכרט:', e.message);
+  } finally {
+    await browser.close();
   }
 }
 
@@ -141,5 +144,3 @@ if (results.length > 0) {
 } else {
   console.log('לא נמצאו עסקאות חדשות');
 }
-
-await browser.close();
