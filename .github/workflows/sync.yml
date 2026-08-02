@@ -33,7 +33,7 @@ jobs:
         env:
           NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
-          DISCOUNT_USER: ${{ secrets.DISCOUNT_ID }}
+          DISCOUNT_USER: ${{ secrets.DISCOUNT_CODE }}
           DISCOUNT_PASS: ${{ secrets.DISCOUNT_PASS }}
           ISRACARD_ID: ${{ secrets.ISRACARD_ID }}
           ISRACARD_PASS: ${{ secrets.ISRACARD_PASS }}
