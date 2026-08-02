@@ -22,7 +22,7 @@ jobs:
         run: npm ci
 
       - name: Install Playwright browsers
-        run: npx playwright install chromium --with-deps
+        run: node node_modules/.bin/playwright install chromium --with-deps
 
       - name: Run bank sync
         env:
