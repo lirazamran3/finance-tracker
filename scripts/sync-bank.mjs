@@ -1,6 +1,7 @@
 import { createClient } from '@supabase/supabase-js';
 import { createScraper, CompanyTypes } from 'israeli-bank-scrapers';
 import Anthropic from '@anthropic-ai/sdk';
+import puppeteer from 'puppeteer';
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL,
@@ -9,6 +10,11 @@ const supabase = createClient(
 
 const CATEGORIES = ['מזון ומסעדות','תחבורה','בילויים','קניות','חשבונות וקבועים','בריאות','השקעות וחסכון','שכר והכנסות','אחר'];
 const START_DATE = new Date(new Date().getFullYear(), new Date().getMonth() - 2, 1);
+
+const browser = await puppeteer.launch({
+  headless: true,
+  args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage'],
+});
 
 const results = [];
 
@@ -21,6 +27,7 @@ if (process.env.DISCOUNT_USER && process.env.DISCOUNT_PASS) {
       startDate: START_DATE,
       combineInstallments: false,
       showBrowser: false,
+      browser,
     });
     const result = await scraper.scrape({
       userCode: process.env.DISCOUNT_USER,
@@ -60,6 +67,7 @@ if (process.env.ISRACARD_ID && process.env.ISRACARD_PASS && process.env.ISRACARD
       startDate: START_DATE,
       combineInstallments: false,
       showBrowser: false,
+      browser,
     });
     const result = await scraper.scrape({
       id: process.env.ISRACARD_ID,
@@ -133,3 +141,5 @@ if (results.length > 0) {
 } else {
   console.log('לא נמצאו עסקאות חדשות');
 }
+
+await browser.close();
