@@ -1,0 +1,37 @@
+name: Bank Sync
+
+on:
+  schedule:
+    - cron: '0 3 * * *'  # כל לילה ב-3:00 בלילה (שעון UTC = 6:00 בוקר ישראל)
+  workflow_dispatch:       # אפשרות להריץ ידנית
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Playwright browsers
+        run: npx playwright install chromium --with-deps
+
+      - name: Run bank sync
+        env:
+          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+          DISCOUNT_ID: ${{ secrets.DISCOUNT_ID }}
+          DISCOUNT_PASS: ${{ secrets.DISCOUNT_PASS }}
+          ISRACARD_ID: ${{ secrets.ISRACARD_ID }}
+          ISRACARD_PASS: ${{ secrets.ISRACARD_PASS }}
+          ISRACARD_CARD6: ${{ secrets.ISRACARD_CARD6 }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: node scripts/sync-bank.mjs

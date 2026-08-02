@@ -105,6 +105,24 @@ export async function POST(req: NextRequest) {
       } catch { /* keep 'אחר' as fallback */ }
     }
 
+    // Save to Supabase
+    if (results.length > 0) {
+      const { createClient } = await import('@supabase/supabase-js');
+      const supabase = createClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL!,
+        process.env.SUPABASE_SERVICE_KEY!
+      );
+
+      const rows = results.map((t: any) => ({
+        ...t,
+        is_fixed: t.isFixed,
+        month: new Date(t.date).getMonth() + 1,
+        year: new Date(t.date).getFullYear(),
+      }));
+
+      await supabase.from('transactions').upsert(rows, { onConflict: 'id' });
+    }
+
     return NextResponse.json({ transactions: results, count: results.length });
   } catch (error: any) {
     return NextResponse.json({ error: error.message }, { status: 500 });
