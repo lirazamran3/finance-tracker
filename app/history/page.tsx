@@ -24,6 +24,18 @@ function getAvailableMonths() {
 
 const AVAILABLE_MONTHS = getAvailableMonths();
 
+// Load all 6 months for the bar chart
+function AllMonthsLoader({ selectedIdx }: { selectedIdx: number }) {
+  const m0 = useTransactions(AVAILABLE_MONTHS[0].month, AVAILABLE_MONTHS[0].year);
+  const m1 = useTransactions(AVAILABLE_MONTHS[1].month, AVAILABLE_MONTHS[1].year);
+  const m2 = useTransactions(AVAILABLE_MONTHS[2].month, AVAILABLE_MONTHS[2].year);
+  const m3 = useTransactions(AVAILABLE_MONTHS[3].month, AVAILABLE_MONTHS[3].year);
+  const m4 = useTransactions(AVAILABLE_MONTHS[4].month, AVAILABLE_MONTHS[4].year);
+  const m5 = useTransactions(AVAILABLE_MONTHS[5].month, AVAILABLE_MONTHS[5].year);
+  const all = [m0, m1, m2, m3, m4, m5].map(m => m.summary);
+  return <MonthlyBarChart history={all} />;
+}
+
 export default function HistoryPage() {
   const [selectedIdx, setSelectedIdx] = useState(AVAILABLE_MONTHS.length - 1);
   const { month, year } = AVAILABLE_MONTHS[selectedIdx];
@@ -99,6 +111,11 @@ export default function HistoryPage() {
           title="חסכון" amount={summary.totalInvestments} icon="📈"
           color="#0EA5E9" bgColor="#E0F2FE" delay={150}
         />
+      </div>
+
+      {/* Bar chart — real data from all 6 months */}
+      <div className="mb-6 fade-up delay-2">
+        <AllMonthsLoader selectedIdx={selectedIdx} />
       </div>
 
       {/* Pie + transactions */}
