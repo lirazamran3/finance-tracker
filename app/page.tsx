@@ -6,7 +6,6 @@ import CategoryPieChart from '@/components/CategoryPieChart';
 import TransactionList from '@/components/TransactionList';
 import AddTransactionModal from '@/components/AddTransactionModal';
 import TransactionDrawer, { DrawerConfig } from '@/components/TransactionDrawer';
-import { MONTH_NAMES } from '@/lib/mock-data';
 import { useTransactions } from '@/lib/useTransactions';
 import { useBudget } from '@/lib/useBudget';
 import { Transaction } from '@/lib/types';
@@ -50,14 +49,9 @@ export default function DashboardPage() {
       {/* Header */}
       <div className="flex items-center justify-between mb-8 fade-up">
         <div>
-          <h2 className="text-2xl font-bold text-[#1E1B4B]">{MONTH_NAMES[month]} {year}</h2>
+          <h2 className="text-2xl font-bold text-[#1E1B4B]">{new Date(year, month-1).toLocaleDateString('he-IL', { month: 'long', year: 'numeric' })}</h2>
           <div className="flex items-center gap-2 mt-0.5">
             <p className="text-sm text-[#6B7280]">סיכום חודשי</p>
-            {usingMock && (
-              <span className="text-xs text-[#F59E0B] bg-[#FEF3C7] px-2 py-0.5 rounded-full font-medium">
-                נתוני דמו
-              </span>
-            )}
             {loading && (
               <span className="w-3.5 h-3.5 border-2 border-[#E5E7EB] border-t-[#7C3AED] rounded-full spin inline-block" />
             )}

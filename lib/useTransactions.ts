@@ -3,7 +3,6 @@
 import { useEffect, useState, useCallback } from 'react';
 import { Transaction, MonthlySummary } from './types';
 import { CATEGORY_CONFIG } from './categories';
-import { MOCK_CURRENT_MONTH } from './mock-data';
 
 function buildSummary(transactions: Transaction[], month: number, year: number): MonthlySummary {
   const totalIncome = transactions.filter(t => t.type === 'income').reduce((s, t) => s + t.amount, 0);
@@ -29,23 +28,16 @@ function buildSummary(transactions: Transaction[], month: number, year: number):
 }
 
 export function useTransactions(month: number, year: number) {
-  const [summary, setSummary] = useState<MonthlySummary>(
-    month === new Date().getMonth() + 1 && year === new Date().getFullYear()
-      ? MOCK_CURRENT_MONTH
-      : buildSummary([], month, year)
-  );
-  const [loading, setLoading] = useState(false);
-  const [usingMock, setUsingMock] = useState(true);
+  const [summary, setSummary] = useState<MonthlySummary>(buildSummary([], month, year));
+  const [loading, setLoading] = useState(true);
+  const [usingMock, setUsingMock] = useState(false);
 
   const load = useCallback(async () => {
     setLoading(true);
     try {
       const res = await fetch(`/api/transactions?month=${month}&year=${year}`);
       const data = await res.json();
-      if (data.transactions && data.transactions.length > 0) {
-        setSummary(buildSummary(data.transactions, month, year));
-        setUsingMock(false);
-      }
+      setSummary(buildSummary(data.transactions ?? [], month, year));
     } catch {
       // keep mock data on error
     } finally {
