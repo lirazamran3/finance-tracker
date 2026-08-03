@@ -8,7 +8,9 @@ import AddTransactionModal from '@/components/AddTransactionModal';
 import TransactionDrawer, { DrawerConfig } from '@/components/TransactionDrawer';
 import { MONTH_NAMES } from '@/lib/mock-data';
 import { useTransactions } from '@/lib/useTransactions';
+import { useBudget } from '@/lib/useBudget';
 import { Transaction } from '@/lib/types';
+import { CATEGORY_CONFIG } from '@/lib/categories';
 
 const DRAWER_CONFIGS: Record<string, DrawerConfig> = {
   income: {
@@ -35,6 +37,7 @@ export default function DashboardPage() {
   const year = now.getFullYear();
 
   const { summary, loading, usingMock, addTransaction, deleteTransaction } = useTransactions(month, year);
+  const { budgets, totalBudget } = useBudget();
   const [showAdd, setShowAdd] = useState(false);
   const [activeDrawer, setActiveDrawer] = useState<string | null>(null);
 
@@ -106,6 +109,46 @@ export default function DashboardPage() {
           <span>100%</span>
         </div>
       </div>
+
+      {/* Budget progress */}
+      {totalBudget > 0 && (
+        <div className="card p-5 mb-6 fade-up">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-sm font-bold text-[#1E1B4B]">תקציב חודשי</h3>
+            <a href="/budget" className="text-xs text-[#7C3AED] font-medium hover:underline">עריכה</a>
+          </div>
+          <div className="flex flex-col gap-3">
+            {summary.categoryBreakdown
+              .filter(({ category }) => (budgets[category] ?? 0) > 0)
+              .sort((a, b) => b.amount - a.amount)
+              .slice(0, 6)
+              .map(({ category, amount }) => {
+                const budget = budgets[category] ?? 0;
+                const pct = Math.min(100, Math.round((amount / budget) * 100));
+                const over = amount > budget;
+                const cfg = CATEGORY_CONFIG[category];
+                return (
+                  <div key={category}>
+                    <div className="flex items-center justify-between mb-1">
+                      <span className="text-xs font-medium text-[#374151]">{cfg?.icon} {category}</span>
+                      <span className="text-xs" style={{ color: over ? '#EF4444' : '#6B7280' }}>
+                        {new Intl.NumberFormat('he-IL', { style: 'currency', currency: 'ILS', maximumFractionDigits: 0 }).format(amount)}
+                        {' / '}
+                        {new Intl.NumberFormat('he-IL', { style: 'currency', currency: 'ILS', maximumFractionDigits: 0 }).format(budget)}
+                      </span>
+                    </div>
+                    <div className="w-full h-2 bg-[#F3F4F6] rounded-full overflow-hidden">
+                      <div
+                        className="h-full rounded-full transition-all duration-700"
+                        style={{ width: `${pct}%`, background: over ? '#EF4444' : cfg?.color ?? '#7C3AED' }}
+                      />
+                    </div>
+                  </div>
+                );
+              })}
+          </div>
+        </div>
+      )}
 
       {/* Chart + Transactions */}
       <div className="grid md:grid-cols-2 gap-6">

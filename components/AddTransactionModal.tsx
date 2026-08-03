@@ -13,7 +13,7 @@ export default function AddTransactionModal({ onClose, onAdd }: Props) {
   const [type, setType] = useState<TransactionType>('expense');
   const [description, setDescription] = useState('');
   const [amount, setAmount] = useState('');
-  const [category, setCategory] = useState<Category>('מזון ומסעדות');
+  const [category, setCategory] = useState<Category>('מזון מהבית');
   const [isFixed, setIsFixed] = useState(false);
   const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
 
@@ -60,7 +60,7 @@ export default function AddTransactionModal({ onClose, onAdd }: Props) {
               key={value}
               onClick={() => { setType(value); setCategory(
                 value === 'income' ? 'שכר והכנסות' :
-                value === 'investment' ? 'השקעות וחסכון' : 'מזון ומסעדות'
+                value === 'investment' ? 'השקעות וחסכון' : 'מזון מהבית'
               ); }}
               className={`flex-1 py-2 rounded-xl text-xs font-semibold transition-colors
                 ${type === value ? 'bg-white text-[#7C3AED] shadow-sm' : 'text-[#6B7280]'}`}
