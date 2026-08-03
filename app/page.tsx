@@ -164,6 +164,7 @@ export default function DashboardPage() {
           onClose={() => setActiveDrawer(null)}
           onAdd={addTransaction}
           onDelete={deleteTransaction}
+          onUpdateCategory={updateCategory}
         />
       )}
     </div>
