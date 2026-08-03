@@ -80,9 +80,25 @@ export function useTransactions(month: number, year: number) {
         body: JSON.stringify({ id }),
       });
     } catch {
-      load(); // reload on error
+      load();
     }
   }
 
-  return { summary, loading, usingMock, addTransaction, deleteTransaction, reload: load };
+  async function updateCategory(id: string, category: string) {
+    setSummary(prev => buildSummary(
+      prev.transactions.map(t => t.id === id ? { ...t, category } : t),
+      month, year
+    ));
+    try {
+      await fetch('/api/transactions', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id, category }),
+      });
+    } catch {
+      load();
+    }
+  }
+
+  return { summary, loading, usingMock, addTransaction, deleteTransaction, updateCategory, reload: load };
 }

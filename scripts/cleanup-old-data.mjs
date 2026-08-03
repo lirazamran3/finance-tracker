@@ -10,17 +10,19 @@ const env = Object.fromEntries(
 
 const supabase = createClient(env.NEXT_PUBLIC_SUPABASE_URL, env.SUPABASE_SERVICE_KEY);
 
-// Delete all transactions before July 2026
+// Delete only scraped (non-manual) transactions before July 2026
 const { error: e1, count: c1 } = await supabase
   .from('transactions')
   .delete({ count: 'exact' })
-  .lt('year', 2026);
+  .lt('year', 2026)
+  .in('source', ['bank', 'credit']);
 
 const { error: e2, count: c2 } = await supabase
   .from('transactions')
   .delete({ count: 'exact' })
   .eq('year', 2026)
-  .lt('month', 7);
+  .lt('month', 7)
+  .in('source', ['bank', 'credit']);
 
 if (e1 || e2) console.error('שגיאה:', e1 || e2);
 else console.log(`נמחקו ${(c1 || 0) + (c2 || 0)} עסקאות ישנות`);

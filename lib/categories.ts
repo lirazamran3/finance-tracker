@@ -1,6 +1,6 @@
 import { Category } from './types';
 
-export const CATEGORY_CONFIG: Record<Category, { color: string; bg: string; icon: string }> = {
+export const CATEGORY_CONFIG: Record<string, { color: string; bg: string; icon: string }> = {
   'מזון מהבית':              { color: '#F97316', bg: '#FFF7ED', icon: '🛒' },
   'אוכל בחוץ':               { color: '#EF4444', bg: '#FEF2F2', icon: '🍽️' },
   'רכב':                     { color: '#3B82F6', bg: '#EFF6FF', icon: '🚗' },

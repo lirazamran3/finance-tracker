@@ -36,7 +36,7 @@ export default function DashboardPage() {
   const month = now.getMonth() + 1;
   const year = now.getFullYear();
 
-  const { summary, loading, usingMock, addTransaction, deleteTransaction } = useTransactions(month, year);
+  const { summary, loading, usingMock, addTransaction, deleteTransaction, updateCategory } = useTransactions(month, year);
   const { budgets, totalBudget } = useBudget();
   const [showAdd, setShowAdd] = useState(false);
   const [activeDrawer, setActiveDrawer] = useState<string | null>(null);
@@ -153,7 +153,7 @@ export default function DashboardPage() {
       {/* Chart + Transactions */}
       <div className="grid md:grid-cols-2 gap-6">
         <CategoryPieChart summary={summary} />
-        <TransactionList transactions={summary.transactions} limit={8} />
+        <TransactionList transactions={summary.transactions} limit={8} onUpdateCategory={updateCategory} />
       </div>
 
       {showAdd && (
